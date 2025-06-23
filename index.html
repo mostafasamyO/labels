@@ -1,47 +1,43 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Sensitivity Label Assistant</title>
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <div class="container">
-    <h1>.Microsoft Sensitivity Label Assistant</h1>
-
-    <form id="labelForm">
-      <!-- Step 1 -->
-      <div class="step active" data-step="1">
-        <h2>Is this content for internal or external use?</h2>
-        <label><input type="radio" name="scope" value="internal"> Internal</label>
-        <label><input type="radio" name="scope" value="external"> External</label>
-        <button type="button" class="next">Next</button>
-      </div>
-
-      <!-- Step 2 -->
-      <div class="step" data-step="2">
-        <h2>What is the sensitivity of the content?</h2>
-        <label><input type="radio" name="sensitivity" value="public"> Public</label>
-        <label><input type="radio" name="sensitivity" value="general"> General</label>
-        <label><input type="radio" name="sensitivity" value="confidential"> Confidential</label>
-        <button type="button" class="prev">Back</button>
-        <button type="button" class="next">Next</button>
-      </div>
-
-      <!-- Step 3 -->
-      <div class="step" data-step="3">
-        <h2>Who needs access to this content?</h2>
-        <label><input type="radio" name="access" value="read-only"> Read Only</label>
-        <label><input type="radio" name="access" value="rw"> R/W</label>
-        <label><input type="radio" name="access" value="custom"> Custom</label>
-        <button type="button" class="prev">Back</button>
-        <button type="submit">Get Recommendation</button>
-      </div>
-    </form>
-
-    <div id="result"></div>
+<form id="labelForm">
+  <!-- Step 0 -->
+  <div class="step active">
+    <h2>Do you want to Share or Email?</h2>
+    <label><input type="radio" name="share_or_email" value="share"> Share</label>
+    <label><input type="radio" name="share_or_email" value="email"> Email</label>
+    <button type="button" class="next">Next</button>
   </div>
 
-  <script src="script.js"></script>
-</body>
-</html>
+  <!-- Step 1 -->
+  <div class="step">
+    <h2>Is it for Internal or External sharing?</h2>
+    <label><input type="radio" name="scope" value="internal"> Internal</label>
+    <label><input type="radio" name="scope" value="external"> External</label>
+    <button type="button" class="prev">Back</button>
+    <button type="button" class="next">Next</button>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="step">
+    <h2>Select Access Level</h2>
+    <label><input type="radio" name="sensitivity" value="public"> Read-only</label>
+    <label><input type="radio" name="sensitivity" value="general"> MCS can access</label>
+    <label><input type="radio" name="sensitivity" value="confidential"> Customize permissions</label>
+
+    <button type="button" class="prev">Back</button>
+    <button type="button" class="next">Next</button>
+  </div>
+
+  <!-- Hidden Access Mapping -->
+  <div class="step" style="display:none;">
+    <input type="radio" name="access" value="read-only" checked>
+    <input type="radio" name="access" value="rw">
+    <input type="radio" name="access" value="custom">
+  </div>
+
+  <!-- Final Submit -->
+  <div class="step">
+    <button type="submit">Submit</button>
+  </div>
+</form>
+
+<div id="result"></div>
