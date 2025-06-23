@@ -15,6 +15,49 @@ document.querySelectorAll(".next").forEach(button => {
       return;
     }
 
+    // Special handling for step 0: "Share or Email?"
+    if (currentStep === 0) {
+      const shareOrEmail = document.querySelector('input[name="share_or_email"]:checked').value;
+
+      if (shareOrEmail === "email") {
+        // Skip to last step
+        steps[currentStep].classList.remove("active");
+        currentStep = steps.length - 1;
+        steps[currentStep].classList.add("active");
+        return;
+      } else {
+        // "Share" selected → proceed to step 1
+        currentStep++;
+        steps[currentStep].classList.add("active");
+        steps[currentStep - 1].classList.remove("active");
+        return;
+      }
+    }
+
+    // Special handling for step 1: Scope (Internal / External)
+    if (currentStep === 1) {
+      const scope = document.querySelector('input[name="scope"]:checked').value;
+
+      if (scope === "external") {
+        // Auto-fill sensitivity & access
+        document.querySelector('input[value="confidential"]').checked = true;
+        document.querySelector('input[value="custom"]').checked = true;
+
+        // Skip to final step
+        steps[currentStep].classList.remove("active");
+        currentStep = steps.length - 1;
+        steps[currentStep].classList.add("active");
+        return;
+      } else {
+        // Internal → move to step 2
+        currentStep++;
+        steps[currentStep].classList.add("active");
+        steps[currentStep - 1].classList.remove("active");
+        return;
+      }
+    }
+
+    // For other steps
     if (currentStep < steps.length - 1) {
       steps[currentStep].classList.remove("active");
       currentStep++;
@@ -33,59 +76,64 @@ document.querySelectorAll(".prev").forEach(button => {
   });
 });
 
-// Final logic
+// Final submit logic
 form.addEventListener("submit", function(e) {
   e.preventDefault();
 
+  const resultDiv = document.getElementById("result");
+
+  const shareOrEmail = document.querySelector('input[name="share_or_email"]:checked')?.value || "";
   const scopeInput = document.querySelector('input[name="scope"]:checked');
   const sensitivityInput = document.querySelector('input[name="sensitivity"]:checked');
   const accessInput = document.querySelector('input[name="access"]:checked');
 
-  const resultDiv = document.getElementById("result");
-
-  // Validate final selections
-  if (!scopeInput || !sensitivityInput || !accessInput) {
+  // Validate required fields
+  if (shareOrEmail === "share" && (!scopeInput || !sensitivityInput || !accessInput)) {
     resultDiv.className = "error";
     resultDiv.innerHTML = "<strong>Error:</strong> Please complete all steps before submitting.";
     return;
   }
 
-  const scope = scopeInput.value;
-  const sensitivity = sensitivityInput.value;
-  const access = accessInput.value;
+  if (shareOrEmail === "email") {
+    // Hardcoded values for email
+    labelName = "External Confidential";
+    access = "custom";
+  } else {
+    const scope = scopeInput.value;
+    const sensitivity = sensitivityInput.value;
+    const access = accessInput.value;
 
-  // Build label name
-  let labelName = `${scope.charAt(0).toUpperCase() + scope.slice(1)} ${sensitivity.charAt(0).toUpperCase() + sensitivity.slice(1)}`;
-  let message = "";
-
-  // Check valid combinations
-  if (access === "custom") {
-    if ((scope === "internal" && sensitivity !== "confidential") ||
-        (scope === "external" && sensitivity !== "confidential")) {
-      resultDiv.className = "error";
-      resultDiv.innerHTML = `<strong>Error:</strong> 'Custom' access is only allowed for '<strong>${labelName}</strong>'`;
-      return;
+    let labelName = `${scope.charAt(0).toUpperCase() + scope.slice(1)} ${sensitivity.charAt(0).toUpperCase() + sensitivity.slice(1)}`;
+    
+    // Validation rules here (same as before)
+    if (access === "custom") {
+      if ((scope === "internal" && sensitivity !== "confidential") ||
+          (scope === "external" && sensitivity !== "confidential")) {
+        resultDiv.className = "error";
+        resultDiv.innerHTML = `<strong>Error:</strong> 'Custom' access is only allowed for '<strong>${labelName}</strong>'`;
+        return;
+      }
     }
-  }
 
-  if (access === "rw") {
-    if ((scope === "internal" && sensitivity === "public") ||
-        (scope === "external" && sensitivity !== "general")) {
-      resultDiv.className = "error";
-      resultDiv.innerHTML = `<strong>Error:</strong> 'R/W' access is not allowed for '<strong>${labelName}</strong>'`;
-      return;
+    if (access === "rw") {
+      if ((scope === "internal" && sensitivity === "public") ||
+          (scope === "external" && sensitivity !== "general")) {
+        resultDiv.className = "error";
+        resultDiv.innerHTML = `<strong>Error:</strong> 'R/W' access is not allowed for '<strong>${labelName}</strong>'`;
+        return;
+      }
     }
-  }
 
-  if (access === "read-only") {
-    const validInternal = ["public", "general"];
-    const validExternal = ["public", "general"];
+    if (access === "read-only") {
+      const validInternal = ["public", "general"];
+      const validExternal = ["public", "general"];
 
-    if ((scope === "internal" && !validInternal.includes(sensitivity)) ||
-        (scope === "external" && !validExternal.includes(sensitivity))) {
-      resultDiv.className = "error";
-      resultDiv.innerHTML = `<strong>Error:</strong> 'Read Only' access is not allowed for '<strong>${labelName}</strong>'`;
-      return;
+      if ((scope === "internal" && !validInternal.includes(sensitivity)) ||
+          (scope === "external" && !validExternal.includes(sensitivity))) {
+        resultDiv.className = "error";
+        resultDiv.innerHTML = `<strong>Error:</strong> 'Read Only' access is not allowed for '<strong>${labelName}</strong>'`;
+        return;
+      }
     }
   }
 
